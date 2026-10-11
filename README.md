@@ -1,4 +1,5 @@
 # Bazaar Tracker
-This provides live market analytics for the Hypixel SkyBlock Bazaar. It looks for the best Bazaar flips using custom market metrics that I've developed.
 
-In progress
+Bazaar Tracker provides live market analytics for the Hypixel SkyBlock Bazaar. It looks for strong Bazaar flips using custom market metrics I developed, including Gamma for opportunity and Omega for stability.
+
+Live site: https://bazaartracker-6lxt.onrender.com/
