@@ -1,34 +1,26 @@
 import requests
 import math
+import base64
+import json
+from pathlib import Path
 
-## Above is random reqs
+BAZAAR_URL = "https://api.hypixel.net/v2/skyblock/bazaar"
+ITEMS_URL = "https://api.hypixel.net/v2/resources/skyblock/items"
 
-## Get Bazaar Data..
+## Get Bazaar Data !
 
 def fetch_bazaar():
-    response = requests.get(
-        "https://api.hypixel.net/v2/skyblock/bazaar",
-        timeout=10
-    )
-
+    response = requests.get(BAZAAR_URL, timeout=10)
     response.raise_for_status()
-
-    data = response.json()
-    return data["products"]
+    return response.json()["products"]
 
 
 ## Get Item Information !
 
 def fetch_item_data():
-    response = requests.get(
-        "https://api.hypixel.net/v2/resources/skyblock/items",
-        timeout=10
-    )
-
+    response = requests.get(ITEMS_URL, timeout=10)
     response.raise_for_status()
-
-    data = response.json()
-    return data["items"]
+    return response.json()["items"]
 
 
 products = fetch_bazaar()
@@ -37,32 +29,124 @@ item_data = fetch_item_data()
 
 ## Organize Item Information !
 
-def build_item_lookup(item_data):
-    item_lookup = {}
+def build_item_lookup(items):
+    lookup = {}
 
-    for item in item_data:
+    for item in items:
         item_id = item.get("id")
 
-        if item_id is not None:
-            item_lookup[item_id] = item
+        if item_id:
+            lookup[item_id] = item
 
-    return item_lookup
+    return lookup
 
 
 item_lookup = build_item_lookup(item_data)
 
 
+## Item Icons !
+
+ICON_FOLDER = Path(__file__).parent / "static" / "item_icons"
+
+
+def decode_skin_url(skin):
+    if not skin or not skin.get("value"):
+        return None
+
+    try:
+        decoded = base64.b64decode(skin["value"]).decode("utf-8")
+        data = json.loads(decoded)
+
+        return data["textures"]["SKIN"]["url"].replace(
+            "http://",
+            "https://"
+        )
+
+    except:
+        return None
+
+
+def get_item_icon(item_id, info):
+
+    ## Official SkyBlock texture
+
+    local_icon = ICON_FOLDER / f"{item_id}.png"
+
+    if local_icon.exists():
+        return (
+            "/static/item_icons/" + item_id + ".png",
+            "material"
+        )
+
+
+    ## Player head texture
+
+    skin_url = decode_skin_url(info.get("skin"))
+
+    if skin_url:
+        return skin_url, "skin"
+
+
+    ## Enchantments
+
+    if item_id.startswith("ENCHANTMENT_"):
+        return (
+            "https://mc.nerothe.com/img/1.20.1/enchanted_book.png",
+            "material"
+        )
+
+
+    ## Shards
+
+    if item_id.startswith("SHARD_") or "_SHARD" in item_id:
+        return (
+            "https://mc.nerothe.com/img/1.20.1/echo_shard.png",
+            "material"
+        )
+
+
+    ## Normal Minecraft model
+
+    item_model = info.get("item_model")
+
+    if item_model and item_model.startswith("minecraft:"):
+        model_name = item_model.split(":", 1)[1]
+
+        return (
+            "https://mc.nerothe.com/img/1.20.1/"
+            + model_name
+            + ".png",
+            "material"
+        )
+
+
+    ## Base material
+
+    material = info.get("material")
+
+    if material:
+        return (
+            "https://mc.nerothe.com/img/1.20.1/"
+            + material.lower()
+            + ".png",
+            "material"
+        )
+
+
+    return None, "none"
+
+
 ## Price Functions !
 
 def get_buy_order_price(item):
-    if len(item["sell_summary"]) == 0:
+    if not item["sell_summary"]:
         return None
 
     return item["sell_summary"][0]["pricePerUnit"]
 
 
 def get_sell_order_price(item):
-    if len(item["buy_summary"]) == 0:
+    if not item["buy_summary"]:
         return None
 
     return item["buy_summary"][0]["pricePerUnit"]
@@ -85,7 +169,7 @@ def get_margin(item):
     if buy_price is None or profit is None:
         return None
 
-    return (profit / buy_price) * 100
+    return profit / buy_price * 100
 
 
 ## My personal scaling functions !
@@ -96,7 +180,6 @@ def compute_gamma(profit, buy_orders, sell_orders, buy_volume, sell_volume):
     if profit <= 0 or buy_volume <= 0:
         return 0
 
-    # Same formula idea but prevents huge profits from crashing Python
     x = profit / k
     decay = math.exp(-x)
 
@@ -130,23 +213,26 @@ def compute_omega(
         order_scale = math.tanh(
             total_orders / average_market_orders
         )
-
     else:
         order_scale = 0
 
     return volume_balance * order_scale
 
 
-## Find average amount of orders in the Bazaar !
+## Average amount of orders !
 
 def get_average_market_orders(products):
     total_orders = 0
     item_count = 0
 
-    for name, item in products.items():
+    for item in products.values():
         quick = item["quick_status"]
 
-        total_orders += quick["buyOrders"] + quick["sellOrders"]
+        total_orders += (
+            quick["buyOrders"]
+            + quick["sellOrders"]
+        )
+
         item_count += 1
 
     if item_count == 0:
@@ -158,22 +244,20 @@ def get_average_market_orders(products):
 average_market_orders = get_average_market_orders(products)
 
 
-## Backup name maker !
+## Backup name !
 
 def pretty_item_name(item_id):
     return item_id.replace("_", " ").title()
 
 
-## Analyze each item !
+## Analyze Item !
 
 def analyze_item(name, item, average_market_orders, item_lookup):
     buy_price = get_buy_order_price(item)
     sell_price = get_sell_order_price(item)
-
-    profit = get_profit(item)
+    gross_profit = get_profit(item)
     margin = get_margin(item)
 
-    # This bottom will be for checking if there volume & demand
     quick = item["quick_status"]
 
     buy_volume = quick["buyVolume"]
@@ -185,17 +269,32 @@ def analyze_item(name, item, average_market_orders, item_lookup):
     buy_week = quick["buyMovingWeek"]
     sell_week = quick["sellMovingWeek"]
 
-    if profit is None:
-        gamma = 0
+    info = item_lookup.get(name, {})
 
+    display_name = info.get(
+        "name",
+        pretty_item_name(name)
+    )
+
+
+    category = info.get("category")
+
+    if category is None:
+        category = "Other"
     else:
-        gamma = compute_gamma(
-            profit,
-            buy_orders,
-            sell_orders,
-            buy_volume,
-            sell_volume
-        )
+        category = category.replace("_", " ").title()
+
+
+    tier = info.get("tier")
+
+    if tier is None:
+        tier = "Unknown"
+    else:
+        tier = tier.replace("_", " ").title()
+
+
+    icon_url, icon_type = get_item_icon(name, info)
+
 
     omega = compute_omega(
         buy_orders,
@@ -205,30 +304,6 @@ def analyze_item(name, item, average_market_orders, item_lookup):
         average_market_orders
     )
 
-    ## Get actual Hypixel item information
-
-    info = item_lookup.get(name, {})
-
-    display_name = info.get(
-        "name",
-        pretty_item_name(name)
-    )
-
-    category = info.get("category")
-
-    if category is None:
-        category = "Other"
-
-    else:
-        category = category.replace("_", " ").title()
-
-    tier = info.get("tier")
-
-    if tier is None:
-        tier = "Unknown"
-
-    else:
-        tier = tier.replace("_", " ").title()
 
     return {
         "name": name,
@@ -236,10 +311,14 @@ def analyze_item(name, item, average_market_orders, item_lookup):
         "category": category,
         "tier": tier,
 
+        "icon_url": icon_url,
+        "icon_type": icon_type,
+
         "buy_price": buy_price,
         "sell_price": sell_price,
 
-        "profit": profit,
+        "gross_profit": gross_profit,
+        "profit": gross_profit,
         "margin": margin,
 
         "buy_volume": buy_volume,
@@ -251,12 +330,12 @@ def analyze_item(name, item, average_market_orders, item_lookup):
         "buy_week": buy_week,
         "sell_week": sell_week,
 
-        "gamma": gamma,
+        "gamma": 0,
         "omega": omega
     }
 
 
-## Analyze everything in the Bazaar !
+## Analyze Bazaar !
 
 def analyze_all_items(products, average_market_orders, item_lookup):
     analyzed_items = []
@@ -283,7 +362,47 @@ all_items = analyze_all_items(
 )
 
 
-## Filter out dead markets !
+## Bazaar Tax !
+
+def apply_tax(items, tax_rate):
+    taxed_items = []
+
+    for item in items:
+        buy_price = item["buy_price"]
+        sell_price = item["sell_price"]
+
+        if buy_price is None or sell_price is None:
+            continue
+
+        money_after_tax = sell_price * (1 - tax_rate)
+        profit = money_after_tax - buy_price
+
+        if buy_price > 0:
+            margin = profit / buy_price * 100
+        else:
+            margin = 0
+
+        gamma = compute_gamma(
+            profit,
+            item["buy_orders"],
+            item["sell_orders"],
+            item["buy_volume"],
+            item["sell_volume"]
+        )
+
+        new_item = item.copy()
+
+        new_item["profit"] = profit
+        new_item["margin"] = margin
+        new_item["gamma"] = gamma
+        new_item["tax_rate"] = tax_rate
+
+        taxed_items.append(new_item)
+
+    return taxed_items
+
+
+## Remove dead markets !
 
 def filter_good_items(items):
     good_items = []
@@ -300,15 +419,11 @@ def filter_good_items(items):
     return good_items
 
 
-good_items = filter_good_items(all_items)
-
-
 ## Rank Items !
 
 def rank_items(items, use_omega=False):
 
-    # Default ranking is only Gamma
-    if use_omega == False:
+    if not use_omega:
 
         return sorted(
             items,
@@ -316,61 +431,45 @@ def rank_items(items, use_omega=False):
             reverse=True
         )
 
-    # Player can choose to factor Omega into ranking later
-    else:
 
-        return sorted(
-            items,
-            key=lambda item: item["gamma"] * item["omega"],
-            reverse=True
-        )
+    return sorted(
+        items,
+        key=lambda item: item["gamma"] * item["omega"],
+        reverse=True
+    )
 
 
-ranked_items = rank_items(good_items)
-
-
-## Search Items !
+## Search !
 
 def search_items(items, search):
     search = search.lower().strip()
-
     results = []
 
     for item in items:
 
-        name = item["name"].lower()
-        display_name = item["display_name"].lower()
-        category = item["category"].lower()
-        tier = item["tier"].lower()
-
         if (
-            search in name
-            or search in display_name
-            or search in category
-            or search in tier
+            search in item["name"].lower()
+            or search in item["display_name"].lower()
+            or search in item["category"].lower()
+            or search in item["tier"].lower()
         ):
             results.append(item)
 
     return results
 
 
-## Testing !
+## Final website list !
 
-print("Bazaar items:", len(products))
-print("SkyBlock item data:", len(item_data))
-print("Analyzed items:", len(all_items))
-print("Good items:", len(good_items))
+def get_ranked_items(
+    tax_rate=0.0125,
+    use_omega=False,
+    search=""
+):
+    items = apply_tax(all_items, tax_rate)
+    items = filter_good_items(items)
+    items = rank_items(items, use_omega)
 
-print()
+    if search:
+        items = search_items(items, search)
 
-for item in ranked_items[:10]:
-
-    print(
-        item["display_name"],
-        "| Category:", item["category"],
-        "| Tier:", item["tier"],
-        "| Profit:", round(item["profit"]),
-        "| Margin:", round(item["margin"], 2),
-        "| Gamma:", round(item["gamma"], 3),
-        "| Omega:", round(item["omega"], 3)
-    )
+    return items
