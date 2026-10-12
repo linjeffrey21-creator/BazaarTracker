@@ -1,5 +1,5 @@
 from pathlib import Path
-from flask import Flask, render_template, request
+from flask import Flask, render_template, request, send_from_directory
 from bazaar import get_ranked_items
 
 app = Flask(__name__)
