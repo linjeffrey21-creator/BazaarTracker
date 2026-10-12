@@ -1,91 +1,41 @@
 <!DOCTYPE html>
 <html>
-
 <head>
-
     <meta charset="UTF-8">
-
-    <meta
-        name="viewport"
-        content="width=device-width, initial-scale=1.0"
-    >
-
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Bazaar Tracker</title>
-
-    <link
-        rel="stylesheet"
-        href="{{ url_for('static', filename='style.css') }}"
-    >
-
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 
-
 {% if background_choice != "none" %}
-
-<body
-    data-background="{{ url_for('static', filename='backgrounds/' + background_choice) }}"
->
-
+<body data-background="{{ url_for('serve_background', filename=background_choice) }}">
 {% else %}
-
 <body>
-
 {% endif %}
 
-
 <main class="page">
-
-
 <form method="GET" id="filters-form">
 
-
     <div class="top-bar">
-
-
         <h1>Bazaar Tracker</h1>
 
-
         <div class="settings-wrap">
-
-
             <button
                 type="button"
                 class="settings-button"
                 id="settings-button"
                 aria-label="Settings"
-            >
-                ⚙
-            </button>
+            >⚙</button>
 
-
-            <div
-                class="settings-box hidden"
-                id="settings-box"
-            >
-
-
+            <div class="settings-box hidden" id="settings-box">
                 <h3>Settings</h3>
 
-
                 <div class="setting-section">
+                    <label for="background">Background</label>
 
-
-                    <label for="background">
-                        Background
-                    </label>
-
-
-                    <select
-                        name="background"
-                        id="background"
-                    >
-
-
+                    <select name="background" id="background">
                         {% for background in backgrounds %}
-
-
                             {% if background.file == "none" %}
-
                                 <option
                                     value="none"
                                     data-url=""
@@ -94,216 +44,96 @@
                                 >
                                     {{ background.label }}
                                 </option>
-
-
                             {% else %}
-
                                 <option
                                     value="{{ background.file }}"
-                                    data-url="{{ url_for('static', filename='backgrounds/' + background.file) }}"
+                                    data-url="{{ url_for('serve_background', filename=background.file) }}"
                                     data-credit="{{ background.credit }}"
                                     {% if background_choice == background.file %}selected{% endif %}
                                 >
                                     {{ background.label }}
                                 </option>
-
                             {% endif %}
-
-
                         {% endfor %}
-
-
                     </select>
 
-
-                    <p
-                        class="photo-credit"
-                        id="photo-credit"
-                    >
+                    <p class="photo-credit" id="photo-credit">
                         {{ background_credit }}
                     </p>
-
-
                 </div>
 
-
                 <div class="setting-section">
+                    <label for="tax">Bazaar Tax</label>
 
-
-                    <label for="tax">
-                        Bazaar Tax
-                    </label>
-
-
-                    <select
-                        name="tax"
-                        id="tax"
-                    >
-
-
+                    <select name="tax" id="tax">
                         <option
                             value="default"
                             {% if tax_choice == "default" %}selected{% endif %}
-                        >
-                            1.25%
-                        </option>
-
+                        >1.25%</option>
 
                         <option
                             value="flipper_1"
                             {% if tax_choice == "flipper_1" %}selected{% endif %}
-                        >
-                            1.125%
-                        </option>
-
+                        >1.125%</option>
 
                         <option
                             value="flipper_2"
                             {% if tax_choice == "flipper_2" %}selected{% endif %}
-                        >
-                            1.00%
-                        </option>
-
-
+                        >1.00%</option>
                     </select>
-
-
                 </div>
 
-
                 <div class="setting-section">
+                    <label for="show">Show Items</label>
 
-
-                    <label for="show">
-                        Show Items
-                    </label>
-
-
-                    <select
-                        name="show"
-                        id="show"
-                    >
-
-
-                        <option
-                            value="10"
-                            {% if show_count == 10 %}selected{% endif %}
-                        >
-                            10
-                        </option>
-
-
-                        <option
-                            value="20"
-                            {% if show_count == 20 %}selected{% endif %}
-                        >
-                            20
-                        </option>
-
-
-                        <option
-                            value="30"
-                            {% if show_count == 30 %}selected{% endif %}
-                        >
-                            30
-                        </option>
-
-
-                        <option
-                            value="50"
-                            {% if show_count == 50 %}selected{% endif %}
-                        >
-                            50
-                        </option>
-
-
-                        <option
-                            value="100"
-                            {% if show_count == 100 %}selected{% endif %}
-                        >
-                            100
-                        </option>
-
-
+                    <select name="show" id="show">
+                        <option value="10" {% if show_count == 10 %}selected{% endif %}>10</option>
+                        <option value="20" {% if show_count == 20 %}selected{% endif %}>20</option>
+                        <option value="30" {% if show_count == 30 %}selected{% endif %}>30</option>
+                        <option value="50" {% if show_count == 50 %}selected{% endif %}>50</option>
+                        <option value="100" {% if show_count == 100 %}selected{% endif %}>100</option>
                     </select>
-
-
                 </div>
 
-
                 <div class="setting-section">
-
-
                     <label class="omega">
-
-
                         <input
                             type="checkbox"
                             name="omega"
                             {% if use_omega %}checked{% endif %}
                         >
-
-
                         Factor Omega
-
-
                     </label>
-
-
                 </div>
 
-
-                <button
-                    type="submit"
-                    class="apply-button"
-                >
+                <button type="submit" class="apply-button">
                     Apply Settings
                 </button>
 
-
                 <div class="settings-info">
-
-
                     <p>
-                        <strong>Gamma</strong>
-                        is my opportunity score. It combines
-                        profit, market activity, and order data
-                        to estimate how attractive a Bazaar
-                        flip is.
+                        <strong>Gamma</strong> is my opportunity score. It combines
+                        profit, market activity, and order data to estimate how
+                        attractive a Bazaar flip is.
                     </p>
 
-
                     <p>
-                        <strong>Omega</strong>
-                        is my stability score. Higher values
+                        <strong>Omega</strong> is my stability score. Higher values
                         suggest a more balanced market.
                     </p>
 
-
                     <p>
-                        Turning on
-                        <strong>Factor Omega</strong>
-                        ranks items using both Gamma and Omega.
+                        Turning on <strong>Factor Omega</strong> ranks items using
+                        both Gamma and Omega.
                     </p>
-
 
                     <p class="background-note">
-                        The backgrounds are places and
-                        landscapes I care about.
+                        The backgrounds are places and landscapes I care about.
                     </p>
-
-
                 </div>
-
-
             </div>
-
-
         </div>
-
-
     </div>
-
 
     <input
         class="search"
@@ -313,325 +143,130 @@
         value="{{ search }}"
     >
 
-
 </form>
 
-
 <div class="table-wrap">
-
-
 <table>
-
-
     <thead>
-
-
         <tr>
-
             <th>#</th>
-
             <th>Item</th>
-
             <th>Buy Price</th>
-
             <th>Sell Price</th>
-
             <th>Buy Volume</th>
-
             <th>Sell Volume</th>
-
             <th>Profit</th>
-
             <th>Margin</th>
-
             <th>Gamma</th>
-
             <th>Omega</th>
-
         </tr>
-
-
     </thead>
 
-
     <tbody>
-
-
     {% for item in items %}
-
-
         <tr>
-
-
-            <td>
-                {{ loop.index }}
-            </td>
-
+            <td>{{ loop.index }}</td>
 
             <td class="name">
-
-
                 <div class="item-name">
-
-
                     {% if item.icon_url %}
-
-
                         {% if item.icon_type == "skin" %}
-
-
                             <div
                                 class="skin-icon"
                                 style="background-image: url('{{ item.icon_url }}');"
-                            >
-                            </div>
-
-
+                            ></div>
                         {% else %}
-
-
                             <img
                                 class="item-icon"
                                 src="{{ item.icon_url }}"
                                 alt="{{ item.display_name }}"
                                 onerror="this.style.display='none'"
                             >
-
-
                         {% endif %}
-
-
                     {% endif %}
 
-
                     <span>
-
-
                         {{ item.display_name }}
-
-
                         <span class="info">
-
-                            {{ item.category }}
-                            /
-                            {{ item.tier }}
-
+                            {{ item.category }} / {{ item.tier }}
                         </span>
-
-
                     </span>
-
-
                 </div>
-
-
             </td>
 
-
-            <td>
-                {{ "{:,.0f}".format(item.buy_price) }}
-            </td>
-
-
-            <td>
-                {{ "{:,.0f}".format(item.sell_price) }}
-            </td>
-
-
-            <td>
-                {{ "{:,.0f}".format(item.buy_volume) }}
-            </td>
-
-
-            <td>
-                {{ "{:,.0f}".format(item.sell_volume) }}
-            </td>
-
-
-            <td class="profit">
-
-                +{{ "{:,.0f}".format(item.profit) }}
-
-            </td>
-
-
-            <td>
-                {{ "{:.2f}".format(item.margin) }}%
-            </td>
-
-
-            <td>
-                {{ "{:.3f}".format(item.gamma) }}
-            </td>
-
-
-            <td>
-                {{ "{:.3f}".format(item.omega) }}
-            </td>
-
-
+            <td>{{ "{:,.0f}".format(item.buy_price) }}</td>
+            <td>{{ "{:,.0f}".format(item.sell_price) }}</td>
+            <td>{{ "{:,.0f}".format(item.buy_volume) }}</td>
+            <td>{{ "{:,.0f}".format(item.sell_volume) }}</td>
+            <td class="profit">+{{ "{:,.0f}".format(item.profit) }}</td>
+            <td>{{ "{:.2f}".format(item.margin) }}%</td>
+            <td>{{ "{:.3f}".format(item.gamma) }}</td>
+            <td>{{ "{:.3f}".format(item.omega) }}</td>
         </tr>
-
-
     {% endfor %}
-
-
     </tbody>
-
-
 </table>
-
-
 </div>
 
-
 {% if items|length == 0 %}
-
-    <p class="empty">
-        No items found.
-    </p>
-
+<p class="empty">No items found.</p>
 {% endif %}
-
 
 </main>
 
-
 <script>
-
-const body =
-    document.body;
-
-
-const backgroundSelect =
-    document.getElementById("background");
-
-
-const photoCredit =
-    document.getElementById("photo-credit");
-
-
-const settingsButton =
-    document.getElementById("settings-button");
-
-
-const settingsBox =
-    document.getElementById("settings-box");
-
-
+const body = document.body;
+const backgroundSelect = document.getElementById("background");
+const photoCredit = document.getElementById("photo-credit");
+const settingsButton = document.getElementById("settings-button");
+const settingsBox = document.getElementById("settings-box");
 
 function setBackground(url) {
-
     if (!url) {
-
         body.style.backgroundImage = "none";
-
         return;
-
     }
 
-
-    body.style.backgroundImage =
-        `linear-gradient(
+    body.style.backgroundImage = `
+        linear-gradient(
             rgba(15, 18, 19, 0.50),
             rgba(15, 18, 19, 0.50)
         ),
-        url("${url}")`;
-
+        url("${url}")
+    `;
 }
-
-
 
 if (body.dataset.background) {
-
-    setBackground(
-        body.dataset.background
-    );
-
+    setBackground(body.dataset.background);
 }
 
+backgroundSelect.addEventListener("change", function () {
+    const option =
+        backgroundSelect.options[backgroundSelect.selectedIndex];
 
+    setBackground(option.dataset.url);
+    photoCredit.textContent = option.dataset.credit;
+});
 
-backgroundSelect.addEventListener(
-    "change",
-    function () {
+settingsButton.addEventListener("click", function (event) {
+    event.stopPropagation();
+    settingsBox.classList.toggle("hidden");
+});
 
-        const option =
-            backgroundSelect.options[
-                backgroundSelect.selectedIndex
-            ];
+settingsBox.addEventListener("click", function (event) {
+    event.stopPropagation();
+});
 
+document.addEventListener("click", function () {
+    settingsBox.classList.add("hidden");
+});
 
-        setBackground(
-            option.dataset.url
-        );
-
-
-        photoCredit.textContent =
-            option.dataset.credit;
-
+document.addEventListener("keydown", function (event) {
+    if (event.key === "Escape") {
+        settingsBox.classList.add("hidden");
     }
-);
-
-
-
-settingsButton.addEventListener(
-    "click",
-    function (event) {
-
-        event.stopPropagation();
-
-        settingsBox.classList.toggle(
-            "hidden"
-        );
-
-    }
-);
-
-
-
-settingsBox.addEventListener(
-    "click",
-    function (event) {
-
-        event.stopPropagation();
-
-    }
-);
-
-
-
-document.addEventListener(
-    "click",
-    function () {
-
-        settingsBox.classList.add(
-            "hidden"
-        );
-
-    }
-);
-
-
-
-document.addEventListener(
-    "keydown",
-    function (event) {
-
-        if (event.key === "Escape") {
-
-            settingsBox.classList.add(
-                "hidden"
-            );
-
-        }
-
-    }
-);
-
+});
 </script>
 
-
 </body>
-
 </html>
