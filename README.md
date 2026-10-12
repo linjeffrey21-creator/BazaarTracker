@@ -39,7 +39,8 @@ It uses custom metrics I developed:
    If your system uses `python3` instead, use:
 
    `python3 app.py`
-5. Open:
+   
+6. Open:
 
    `http://localhost:5050`
 
