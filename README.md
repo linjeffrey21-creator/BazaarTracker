@@ -3,8 +3,8 @@
 Bazaar Tracker is a live Hypixel SkyBlock Bazaar tracker that helps find strong flips across the market.
 
 It uses custom metrics I developed:
-- **Gamma** measures opportunity using profit and market activity.
-- **Omega** measures stability and can optionally be factored into rankings.
+1. **Gamma** measures opportunity using profit and market activity.
+2. **Omega** measures stability and can optionally be factored into rankings.
 
 ## Features
 
@@ -16,7 +16,7 @@ It uses custom metrics I developed:
 - Adjustable number of results
 - Background picker
 
-## Run locally
+## To run this locally
 
 1. First, download or clone this repository:
 
