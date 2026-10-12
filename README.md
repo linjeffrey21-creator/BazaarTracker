@@ -2,6 +2,8 @@
 
 Bazaar Tracker is a live Hypixel SkyBlock Bazaar tracker that helps find strong flips across the market.
 
+![Bazaar Tracker Screenshot](bazaar-tracker.png)
+
 **Live Demo:** https://bazaar-tracker-ten.vercel.app/
 
 It uses custom metrics I developed:
