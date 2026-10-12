@@ -15,7 +15,10 @@ tax_rates = {
 ## Backgrounds !
 
 BACKGROUND_FOLDER = Path(__file__).parent / "static" / "backgrounds"
-
+@app.route("/backgrounds/<path:filename>")
+def serve_background(filename):
+    return send_from_directory(BACKGROUND_FOLDER, filename)
+    
 background_credits = {
     "Japanese Station by the Sea.png":
         "Photo © 2022 Nicholas Smith",
