@@ -10,7 +10,7 @@ It uses custom metrics I developed:
 
 - Pulls live Hypixel Bazaar data from the API
 - Search by item
-- Tax settings because the Bazaar taxes transactions
+- Tax settings because the Bazaar charges transaction taxes
 - Gamma and Omega rankings
 - Item icons
 - Adjustable number of results
@@ -34,8 +34,11 @@ It uses custom metrics I developed:
 
 4. Run the app:
 
-   `python3 app.py`
+   `python app.py`
 
+   If your system uses `python3` instead, use:
+
+   `python3 app.py`
 5. Open:
 
    `http://localhost:5050`
