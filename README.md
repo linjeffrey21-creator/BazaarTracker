@@ -58,4 +58,4 @@ By default, items are ranked using Gamma. However, you can factor in Omega, whic
 
 Python, Flask, HTML, CSS, JavaScript, and the Hypixel API.
 
-As a parting gift to the thousand hours I put into SkyBlock.
+<i> As a parting gift to the thousand hours I put into SkyBlock. <i>
