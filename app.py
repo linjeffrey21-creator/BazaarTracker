@@ -4,7 +4,7 @@ from bazaar import get_ranked_items
 
 app = Flask(__name__)
 
-## Tax choices !
+## Tax choices (https://hypixel-skyblock.fandom.com/wiki/Bazaar)
 
 tax_rates = {
     "default": 0.0125,
