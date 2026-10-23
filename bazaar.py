@@ -15,7 +15,7 @@ def fetch_bazaar():
     return response.json()["products"]
 
 
-## Get Item Information !
+## Fetch item info
 
 def fetch_item_data():
     response = requests.get(ITEMS_URL, timeout=10)
@@ -244,13 +244,13 @@ def get_average_market_orders(products):
 average_market_orders = get_average_market_orders(products)
 
 
-## Backup name !
+## Backup name 
 
 def pretty_item_name(item_id):
     return item_id.replace("_", " ").title()
 
 
-## Analyze Item !
+## Analyze Item 
 
 def analyze_item(name, item, average_market_orders, item_lookup):
     buy_price = get_buy_order_price(item)
