@@ -12,7 +12,7 @@ tax_rates = {
     "flipper_2": 0.01
 }
 
-## Backgrounds !
+## Backgrounds
 
 BACKGROUND_FOLDER = Path(__file__).parent / "static" / "backgrounds"
 @app.route("/backgrounds/<path:filename>")
@@ -76,7 +76,7 @@ def home():
     tax_choice = request.args.get("tax", "default")
     use_omega = request.args.get("omega") == "on"
 
-    ## Number of rows !
+    ## Number of rows
 
     try:
         show_count = int(
@@ -91,7 +91,7 @@ def home():
         show_count = 20
 
 
-    ## Background !
+    ## Backgrounds
 
     backgrounds = get_backgrounds()
 
@@ -122,7 +122,7 @@ def home():
             break
 
 
-    ## Bazaar !
+    ## Bazaar taxes and sorting 
 
     tax_rate = tax_rates.get(
         tax_choice,
