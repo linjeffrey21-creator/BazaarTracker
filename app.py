@@ -1,10 +1,10 @@
 from pathlib import Path
-from flask import Flask, render_template, request
+from flask import Flask, render_template, request, send_from_directory
 from bazaar import get_ranked_items
 
 app = Flask(__name__)
 
-## Tax choices !
+## Tax choices (https://hypixel-skyblock.fandom.com/wiki/Bazaar)
 
 tax_rates = {
     "default": 0.0125,
@@ -12,10 +12,13 @@ tax_rates = {
     "flipper_2": 0.01
 }
 
-## Backgrounds !
+## Backgrounds
 
 BACKGROUND_FOLDER = Path(__file__).parent / "static" / "backgrounds"
-
+@app.route("/backgrounds/<path:filename>")
+def serve_background(filename):
+    return send_from_directory(BACKGROUND_FOLDER, filename)
+    
 background_credits = {
     "Japanese Station by the Sea.png":
         "Photo © 2022 Nicholas Smith",
@@ -73,7 +76,7 @@ def home():
     tax_choice = request.args.get("tax", "default")
     use_omega = request.args.get("omega") == "on"
 
-    ## Number of rows !
+    ## Number of rows
 
     try:
         show_count = int(
@@ -88,7 +91,7 @@ def home():
         show_count = 20
 
 
-    ## Background !
+    ## Backgrounds
 
     backgrounds = get_backgrounds()
 
@@ -119,7 +122,7 @@ def home():
             break
 
 
-    ## Bazaar !
+    ## Bazaar taxes and sorting 
 
     tax_rate = tax_rates.get(
         tax_choice,
